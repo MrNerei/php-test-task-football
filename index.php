@@ -31,6 +31,7 @@
 		public $title;
 		public $data = array();
 
+		public $gametime;
 		public $result_stat=array();
 		public $events_stat=array();
 		public $players_stat=array();
@@ -72,6 +73,7 @@
 					break;
 					case "finishPeriod":
 						$this->data[] = new finishPeriod($inf_obj);
+						$this->gametime=$inf_obj->time;
 					break;
 					case "replacePlayer":
 						$this->data[] = new replacePlayer($inf_obj);
@@ -82,7 +84,10 @@
 					break;
 				}
 			}
-//				print_r($this->data);
+		}
+
+		public function get_name($team, $num){
+			return $this->players_stat[$team][$num]["name"];
 		}
 
 		protected function set_base_info($inf){
@@ -112,7 +117,6 @@
 						$player["startTime"]=0;
 					}
 				}
-//				echo "<pre>"; print_r($this->result_stat); echo "</pre>";
 			}
 		}
 
@@ -124,17 +128,17 @@
 				$this->players_stat[$inf->details->team][$inf->details->playerNumber]["goals"]=1;
 			}
 
-			if (isset($this->players_stat[$inf->details->team][$inf->details->assistantNumber]["assists"])){
-				$this->players_stat[$inf->details->team][$inf->details->assistantNumber]["assists"]++;
-			} else {
-				$this->players_stat[$inf->details->team][$inf->details->assistantNumber]["assists"]=1;
+			if (($inf->details->assistantNumber!="") and ($inf->details->assistantNumber!=null)){
+				if (isset($this->players_stat[$inf->details->team][$inf->details->assistantNumber]["assists"])){
+					$this->players_stat[$inf->details->team][$inf->details->assistantNumber]["assists"]++;
+				} else {
+					$this->players_stat[$inf->details->team][$inf->details->assistantNumber]["assists"]=1;
+				}
 			}
 
-			$this->events_stat[$inf->time]=array("type"=> "goal", "team"=>$inf->details->team, "player"=>$inf->details->playerNumber);
+			$this->events_stat[$inf->time]=array("type"=> "goal", "team"=>$inf->details->team, "player"=>$inf->details->playerNumber, "assist"=>$inf->details->assistantNumber);
 		}
-		protected function set_events_stat($inf){
 
-		}
 		protected function set_yellow($inf){
 
 			if (isset($this->players_stat[$inf->details->team][$inf->details->playerNumber]["yellow"])){
@@ -188,8 +192,6 @@
  			include "templates/block-info.tpl";
  			$content = ob_get_contents();
 			ob_end_clean();
-  			//$content.='<h2>Общие сведения</h2>';
-  			//$content.='<p>'.$this->time.'</p>';
   			return $content;
  		}
  	}
@@ -197,8 +199,10 @@
 
  	class startPeriod extends publication {
  		public function do_print() {
-  			$content.= '<h2>Начало периода</h2>';
-  			$content.= '<p>'.$this->time.'</p>';
+  			ob_start();
+ 			include "templates/block-start.tpl";
+ 			$content = ob_get_contents();
+			ob_end_clean();
   			return $content;
  		}
  	}
@@ -206,8 +210,10 @@
 
  	class finishPeriod extends publication {
  		public function do_print() {
-  			$content.= '<h2>Конец периода</h2>';
-  			$content.= '<p>'.$this->time.'</p>';
+  			ob_start();
+ 			include "templates/block-end.tpl";
+ 			$content = ob_get_contents();
+			ob_end_clean();
   			return $content;
  		}
  	}
@@ -215,8 +221,10 @@
 
 	class dangerousMoment extends publication {
  		public function do_print() {
-  			$content.= '<h2>Опасный момент</h2>';
-  			$content.= '<p>'.$this->time.'</p>';
+  			ob_start();
+ 			include "templates/block-dangerous.tpl";
+ 			$content = ob_get_contents();
+			ob_end_clean();
   			return $content;
  		}
  	}
@@ -224,8 +232,10 @@
 
  	class yellowCard extends publication {
  		public function do_print() {
-  			$content.= '<h2>Желтая карточка</h2>';
-  			$content.= '<p>'.$this->time.'</p>';
+  			ob_start();
+ 			include "templates/block-yellow.tpl";
+ 			$content = ob_get_contents();
+			ob_end_clean();
   			return $content;
  		}
  	}
@@ -233,8 +243,10 @@
 
  	class redCard extends publication {
  		public function do_print() {
-  			$content.= '<h2>Красная карточка</h2>';
-  			$content.= '<p>'.$this->time.'</p>';
+  			ob_start();
+ 			include "templates/block-red.tpl";
+ 			$content = ob_get_contents();
+			ob_end_clean();
   			return $content;
  		}
  	}
@@ -242,8 +254,10 @@
 
  	class goal extends publication {
  		public function do_print() {
-  			$content.= '<h2>Гоооооол!!</h2>';
-  			$content.= '<p>'.$this->time.'</p>';
+  			ob_start();
+ 			include "templates/block-goal.tpl";
+ 			$content = ob_get_contents();
+			ob_end_clean();
   			return $content;
  		}
  	}
@@ -251,17 +265,22 @@
 
  	class replacePlayer extends publication {
  		public function do_print() {
-  			$content.= '<h2>Замена!</h2>';
-  			$content.= '<p>'.$this->time.'</p>';
+  			ob_start();
+ 			include "templates/block-replace.tpl";
+ 			$content = ob_get_contents();
+			ob_end_clean();
   			return $content;
  		}
  	}
 
+	
+	//Типы json наборов данных
 	/*
 	"info"
 	"startPeriod"
 	"dangerousMoment"
   	"yellowCard"
+  	//"redCard"
 	"goal"
 	"finishPeriod"
 	"replacePlayer"
@@ -283,24 +302,22 @@
 			}
 		}
 
-//		echo "<pre>"; 
-//		print_r($file->events_stat); 
-//		echo "</pre>";
-
-		echo $content;
-
 		$header = file_get_contents("templates/header.tpl");
 		$footer = file_get_contents("templates/footer.tpl");
+		ob_start();
+ 		include "templates/statistics.tpl";
+ 		$statblock = ob_get_contents();
+		ob_end_clean();
+
 
 		$res_file = fopen("result/".$file->title.".html", "w");
 		fwrite($res_file, $header);
+		fwrite($res_file, $statblock);
 		fwrite($res_file, $content);
 		fwrite($res_file, $footer);
 
 		fclose($res_file);
 	}
-
-//	print_r(config::$files_list);
 
 
 ?>
