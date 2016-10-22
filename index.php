@@ -18,6 +18,9 @@
 				if  (pathinfo($file, PATHINFO_EXTENSION) == "json"){
 					$file = new json_file($dir, $file);
 				}
+				else{
+					unset($file);
+				}
 			}
 			self::$files_list = $files;
 		}
@@ -45,6 +48,9 @@
 		public function parse_json(){
 			$json = file_get_contents($this->file_name, true);
 			$info = json_decode($json);
+			if (json_last_error() != JSON_ERROR_NONE ){
+				echo "Произошла ошибка при декодировании json файла ".$this->file_name.", код ошибки: ".json_last_error()."файл не будет преобразован";
+			}
 			$control=array();
 			foreach($info as $inf_obj)
 			{
