@@ -6,40 +6,39 @@
 		public static $dir = 'source/matches';
 		public static $files_list;
 
+
 		public static function check_dir($dir){
 			$files = scandir($dir);
 			unset($files[array_search('.', $files)]);
 			unset($files[array_search('..', $files)]);
-//			print_r($files);
 			if (substr($dir, -1) != "/"){
 				$dir=$dir."/";
 			}
 			foreach ($files as &$file){
 				if  (pathinfo($file, PATHINFO_EXTENSION) == "json"){
-					$file = new json_file($dir.$file);
+					$file = new json_file($dir, $file);
 				}
 			}
 			self::$files_list = $files;
 		}
+
 	}
+
 
 	class json_file{
 
 		public $file_name;
+		public $title;
 		public $data = array();
 
 		public $result_stat=array();
 		public $events_stat=array();
-		public $replace_stat=array();
 		public $players_stat=array();
-		// public $main_players_stat=array();
-		// public $spare_players_stat=array();
-		// public $players_time_stat=array();
-		// public $goals_players_stat=array();
-		// public $players_cards_stat=array();
 
-		function __construct($file_name) {
-			$this->file_name = $file_name;
+
+		function __construct($dir, $file) {
+			$this->file_name = $dir.$file;
+			$this->title = pathinfo($file, PATHINFO_FILENAME);
 		}
 
 		public function parse_json(){
@@ -61,9 +60,11 @@
 					break;
   					case "yellowCard":
   						$this->data[] = new yellowCard($inf_obj);
+  						$this->set_yellow($inf_obj);
   					break;
   					case "redCard":
   						$this->data[] = new redCard($inf_obj);
+  						$this->set_red($inf_obj);
   					break;
 					case "goal":
 						$this->data[] = new goal($inf_obj);
@@ -74,6 +75,7 @@
 					break;
 					case "replacePlayer":
 						$this->data[] = new replacePlayer($inf_obj);
+						$this->set_replace_stat($inf_obj);
 					break;
 					default: 
 						$this->data[] = new info($inf_obj);
@@ -84,14 +86,12 @@
 		}
 
 		protected function set_base_info($inf){
-
 			if (count($inf->details)>0){
-
 				if (count($this->result_stat)==0){
 					$this->result_stat = array($inf->details->team1->title => 0, $inf->details->team2->title => 0);
 				}
 
-				$t1p=array(); // массивы ключ-значение более удобны для последующей обработки
+				$t1p=array();
 				foreach ($inf->details->team1->players as $player){
 					$t1p[$player->number]["name"] = $player->name;
 				}
@@ -104,21 +104,20 @@
 
 				foreach ($this->players_stat[$inf->details->team1->title] as $number=>&$player){
 					if (in_array($number, $inf->details->team1->startPlayerNumbers)){
-						$player["startTime"]=$inf->time;
+						$player["startTime"]=0;
 					}
 				}
 				foreach ($this->players_stat[$inf->details->team2->title] as $number=>&$player){
 					if (in_array($number, $inf->details->team2->startPlayerNumbers)){
-						$player["startTime"]=$inf->time;
+						$player["startTime"]=0;
 					}
 				}
 //				echo "<pre>"; print_r($this->result_stat); echo "</pre>";
 			}
 		}
+
 		protected function set_goal($inf){
-
 			$this->result_stat[$inf->details->team]++;
-
 			if (isset($this->players_stat[$inf->details->team][$inf->details->playerNumber]["goals"])){
 				$this->players_stat[$inf->details->team][$inf->details->playerNumber]["goals"]++;
 			} else {
@@ -130,29 +129,40 @@
 			} else {
 				$this->players_stat[$inf->details->team][$inf->details->assistantNumber]["assists"]=1;
 			}
+
+			$this->events_stat[$inf->time]=array("type"=> "goal", "team"=>$inf->details->team, "player"=>$inf->details->playerNumber);
 		}
 		protected function set_events_stat($inf){
 
 		}
-		protected function set_main_players_stat($inf){
+		protected function set_yellow($inf){
 
+			if (isset($this->players_stat[$inf->details->team][$inf->details->playerNumber]["yellow"])){
+				$this->players_stat[$inf->details->team][$inf->details->playerNumber]["yellow"]++;
+				$this->players_stat[$inf->details->team][$inf->details->playerNumber]["finTime"]=$inf->time;
+				$this->events_stat[$inf->time]=array("type"=> "yellow", "team"=>$inf->details->team, "player"=>$inf->details->playerNumber);
+				$this->events_stat[$inf->time]=array("type"=> "remove", "team"=>$inf->details->team, "player"=>$inf->details->playerNumber);
+			} else {
+				$this->players_stat[$inf->details->team][$inf->details->playerNumber]["yellow"]=1;
+				$this->events_stat[$inf->time]=array("type"=> "yellow", "team"=>$inf->details->team, "player"=>$inf->details->playerNumber);
+			}
 		}
+
+		protected function set_red($inf){
+
+			$this->players_stat[$inf->details->team][$inf->details->playerNumber]["red"]=1;
+			$this->players_stat[$inf->details->team][$inf->details->playerNumber]["finTime"]=$inf->time;
+			$this->events_stat[$inf->time]=array("type"=> "red", "team"=>$inf->details->team, "player"=>$inf->details->playerNumber);
+			$this->events_stat[$inf->time]=array("type"=> "remove", "team"=>$inf->details->team, "player"=>$inf->details->playerNumber);
+		}
+
 		protected function set_replace_stat($inf){
 
-		}
-		protected function set_spare_players_stat($inf){
+			$this->players_stat[$inf->details->team][$inf->details->inPlayerNumber]["startTime"] = $inf->time;
+			$this->players_stat[$inf->details->team][$inf->details->outPlayerNumber]["finTime"]=$inf->time;
 
+			$this->events_stat[$inf->time]=array("type"=> "replace", "team"=>$inf->details->team, "playerIn"=>$inf->details->inPlayerNumber, "playerOut"=>$inf->details->outPlayerNumber);
 		}
-		protected function set_players_time_stat($inf){
-
-		}
-		protected function set_goals_players_stat($inf){
-
-		}
-		protected function set_players_cards_stat($inf){
-
-		}
-
 	}
 	
 
@@ -174,64 +184,76 @@
 
 	class info extends publication {
  		public function do_print() {
-  			echo '<h2>Общие сведения</h2>';
-  			echo '<p>'.$this->time.'</p>';
+ 			ob_start();
+ 			include "templates/block-info.tpl";
+ 			$content = ob_get_contents();
+			ob_end_clean();
+  			//$content.='<h2>Общие сведения</h2>';
+  			//$content.='<p>'.$this->time.'</p>';
+  			return $content;
  		}
  	}
 
 
  	class startPeriod extends publication {
  		public function do_print() {
-  			echo '<h2>Начало периода</h2>';
-  			echo '<p>'.$this->time.'</p>';
+  			$content.= '<h2>Начало периода</h2>';
+  			$content.= '<p>'.$this->time.'</p>';
+  			return $content;
  		}
  	}
 
 
  	class finishPeriod extends publication {
  		public function do_print() {
-  			echo '<h2>Конец периода</h2>';
-  			echo '<p>'.$this->time.'</p>';
+  			$content.= '<h2>Конец периода</h2>';
+  			$content.= '<p>'.$this->time.'</p>';
+  			return $content;
  		}
  	}
 	
 
 	class dangerousMoment extends publication {
  		public function do_print() {
-  			echo '<h2>Опасный момент</h2>';
-  			echo '<p>'.$this->time.'</p>';
+  			$content.= '<h2>Опасный момент</h2>';
+  			$content.= '<p>'.$this->time.'</p>';
+  			return $content;
  		}
  	}
 
 
  	class yellowCard extends publication {
  		public function do_print() {
-  			echo '<h2>Желтая карточка</h2>';
-  			echo '<p>'.$this->time.'</p>';
+  			$content.= '<h2>Желтая карточка</h2>';
+  			$content.= '<p>'.$this->time.'</p>';
+  			return $content;
  		}
  	}
 
 
  	class redCard extends publication {
  		public function do_print() {
-  			echo '<h2>Красная карточка</h2>';
-  			echo '<p>'.$this->time.'</p>';
+  			$content.= '<h2>Красная карточка</h2>';
+  			$content.= '<p>'.$this->time.'</p>';
+  			return $content;
  		}
  	}
 
 
  	class goal extends publication {
  		public function do_print() {
-  			echo '<h2>Гоооооол!!</h2>';
-  			echo '<p>'.$this->time.'</p>';
+  			$content.= '<h2>Гоооооол!!</h2>';
+  			$content.= '<p>'.$this->time.'</p>';
+  			return $content;
  		}
  	}
 
 
  	class replacePlayer extends publication {
  		public function do_print() {
-  			echo '<h2>Замена!</h2>';
-  			echo '<p>'.$this->time.'</p>';
+  			$content.= '<h2>Замена!</h2>';
+  			$content.= '<p>'.$this->time.'</p>';
+  			return $content;
  		}
  	}
 
@@ -249,24 +271,36 @@
 	config::check_dir(config::$dir);
 
 	foreach(config::$files_list as $file){
+		$content = "";
+
 		$file->parse_json();
 		foreach($file->data as $note){
 			if ($note instanceof publication) {
-				$note->do_print();
+				$content.= $note->do_print();
 			}
 			else {
 				echo "Ошибка! Неопознанный класс!";
 			}
 		}
 
-		echo "<pre>"; 
-		print_r($file->result_stat); 
-		echo "</pre>";
+//		echo "<pre>"; 
+//		print_r($file->events_stat); 
+//		echo "</pre>";
 
+		echo $content;
+
+		$header = file_get_contents("templates/header.tpl");
+		$footer = file_get_contents("templates/footer.tpl");
+
+		$res_file = fopen("result/".$file->title.".html", "w");
+		fwrite($res_file, $header);
+		fwrite($res_file, $content);
+		fwrite($res_file, $footer);
+
+		fclose($res_file);
 	}
 
 //	print_r(config::$files_list);
-
 
 
 ?>
