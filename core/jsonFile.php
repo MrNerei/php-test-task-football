@@ -7,12 +7,12 @@
     {
         private $file_name;
         private $title;
-        private $data = array();
+        private $data = [];
 
         public $gameTime;
-        public $resultStat = array();
-        public $eventsStat = array();
-        public $playersStat = array();
+        public $resultStat = [];
+        public $eventsStat = [];
+        public $playersStat = [];
 
         public function __construct($dir, $file) {
             if (substr($dir, -1) != "/"){
@@ -89,18 +89,18 @@
                 return false;
             }
             if (count($this->resultStat) == 0){
-                $this->resultStat = array($inf->details->team1->title => 0, $inf->details->team2->title => 0)/**/;
+                $this->resultStat = [$inf->details->team1->title => 0, $inf->details->team2->title => 0 ];
             }
-            $t1p = array();
+            $t1p = [];
             foreach ($inf->details->team1->players as $player){
                 $t1p[$player->number]["name"] = $player->name;
             }
-            $t2p = array();
+            $t2p = [];
             foreach ($inf->details->team2->players as $player){
                 $t2p[$player->number]["name"] = $player->name;
             }
 
-            $this->playersStat = array($inf->details->team1->title => $t1p, $inf->details->team2->title => $t2p)/**/;
+            $this->playersStat = [$inf->details->team1->title => $t1p, $inf->details->team2->title => $t2p ];
 
             $player = null;
             foreach ($this->playersStat[$inf->details->team1->title] as $number => &$player) {
@@ -130,7 +130,7 @@
                 }
                 $this->playersStat[$inf->details->team][$inf->details->assistantNumber]["assists"]++;
             }
-            $this->eventsStat[$inf->time] = array("type" => "goal", "team" => $inf->details->team, "player" => $inf->details->playerNumber, "assist"=>$inf->details->assistantNumber)/**/;
+            $this->eventsStat[$inf->time] = ["type" => "goal", "team" => $inf->details->team, "player" => $inf->details->playerNumber, "assist"=>$inf->details->assistantNumber ];
         }
 
         private function setYellowClass($inf)
@@ -138,11 +138,11 @@
             if (isset($this->playersStat[$inf->details->team][$inf->details->playerNumber]["yellow"])){
                 $this->playersStat[$inf->details->team][$inf->details->playerNumber]["yellow"]++;
                 $this->playersStat[$inf->details->team][$inf->details->playerNumber]["finTime"] = $inf->time;
-                $this->eventsStat[$inf->time] = array("type" => "yellow", "team" => $inf->details->team, "player" => $inf->details->playerNumber)/**/;
-                $this->eventsStat[$inf->time] = array("type" => "remove", "team" => $inf->details->team, "player" => $inf->details->playerNumber)/**/;
+                $this->eventsStat[$inf->time] = ["type" => "yellow", "team" => $inf->details->team, "player" => $inf->details->playerNumber ];
+                $this->eventsStat[$inf->time] = ["type" => "remove", "team" => $inf->details->team, "player" => $inf->details->playerNumber ];
             } else {
                 $this->playersStat[$inf->details->team][$inf->details->playerNumber]["yellow"] = 1;
-                $this->eventsStat[$inf->time] = array("type" => "yellow", "team" => $inf->details->team, "player" => $inf->details->playerNumber)/**/;
+                $this->eventsStat[$inf->time] = ["type" => "yellow", "team" => $inf->details->team, "player" => $inf->details->playerNumber ];
             }
         }
 
@@ -150,14 +150,14 @@
         {
             $this->playersStat[$inf->details->team][$inf->details->playerNumber]["red"] = 1;
             $this->playersStat[$inf->details->team][$inf->details->playerNumber]["finTime"] = $inf->time;
-            $this->eventsStat[$inf->time] = array("type" => "red", "team" => $inf->details->team, "player" => $inf->details->playerNumber)/**/;
-            $this->eventsStat[$inf->time] = array("type" => "remove", "team" => $inf->details->team, "player" => $inf->details->playerNumber)/**/;
+            $this->eventsStat[$inf->time] = ["type" => "red", "team" => $inf->details->team, "player" => $inf->details->playerNumber ];
+            $this->eventsStat[$inf->time] = ["type" => "remove", "team" => $inf->details->team, "player" => $inf->details->playerNumber ];
         }
 
         private function setReplaceStat($inf)
         {
             $this->playersStat[$inf->details->team][$inf->details->inPlayerNumber]["startTime"] = $inf->time;
             $this->playersStat[$inf->details->team][$inf->details->outPlayerNumber]["finTime"] = $inf->time;
-            $this->eventsStat[$inf->time] = array("type" => "replace", "team"=>$inf->details->team, "playerIn" => $inf->details->inPlayerNumber, "playerOut" => $inf->details->outPlayerNumber)/**/;
+            $this->eventsStat[$inf->time] = ["type" => "replace", "team"=>$inf->details->team, "playerIn" => $inf->details->inPlayerNumber, "playerOut" => $inf->details->outPlayerNumber ];
         }
     }

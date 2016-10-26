@@ -6,7 +6,7 @@
     class config
     {
         private $dir = 'source/matches';
-        private $filesList = array();
+        private $filesList = [];
 
         public function  __construct($dir)
         {
