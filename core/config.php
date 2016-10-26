@@ -1,7 +1,7 @@
 <?php
-    //namespace NH\footballParser\config;
+    namespace NH\footballParser\config;
 
-    //use NH\footballParser\jsonFile as jsonFile;
+    use NH\footballParser\jsonFile as jsonFile;
 
     class config
     {
@@ -27,7 +27,7 @@
                 if (pathinfo($file, PATHINFO_EXTENSION) != "json") {
                     continue;
                 }
-                $this->filesList[] = new jsonFile($dir, $file);
+                $this->filesList[] = new jsonFile\jsonFile($dir, $file);
             }
         }
     }

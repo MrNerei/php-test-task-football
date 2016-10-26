@@ -1,7 +1,7 @@
 <?php
-   // namespace NH\footballParser\jsonFile;
+    namespace NH\footballParser\jsonFile;
 
-    //use NH\footballParser\publication as publication;
+    use NH\footballParser\publication as publication;
 
     class jsonFile
     {
@@ -42,37 +42,37 @@
             {
                 switch ($inf_obj->type){
                     case "info":
-                        $this->data[] = new info($inf_obj);
+                        $this->data[] = new publication\info($inf_obj);
                         break;
                     case "startPeriod":
-                        $this->data[] = new startPeriod($inf_obj);
+                        $this->data[] = new publication\startPeriod($inf_obj);
                         $this->setBaseInfo($inf_obj);
                         break;
                     case "dangerousMoment":
-                        $this->data[] = new dangerousMoment($inf_obj);
+                        $this->data[] = new publication\dangerousMoment($inf_obj);
                         break;
                     case "yellowCard":
-                        $this->data[] = new yellowCard($inf_obj);
+                        $this->data[] = new publication\yellowCard($inf_obj);
                         $this->setYellowClass($inf_obj);
                         break;
                     case "redCard":
-                        $this->data[] = new redCard($inf_obj);
+                        $this->data[] = new publication\redCard($inf_obj);
                         $this->setRedClass($inf_obj);
                         break;
                     case "goal":
-                        $this->data[] = new goal($inf_obj);
+                        $this->data[] = new publication\goal($inf_obj);
                         $this->setGoalClass($inf_obj);
                         break;
                     case "finishPeriod":
-                        $this->data[] = new finishPeriod($inf_obj);
+                        $this->data[] = new publication\finishPeriod($inf_obj);
                         $this->gameTime=$inf_obj->time;
                         break;
                     case "replacePlayer":
-                        $this->data[] = new replacePlayer($inf_obj);
+                        $this->data[] = new publication\replacePlayer($inf_obj);
                         $this->setReplaceStat($inf_obj);
                         break;
                     default:
-                        $this->data[] = new info($inf_obj);
+                        $this->data[] = new publication\info($inf_obj);
                         break;
                 }
             }
