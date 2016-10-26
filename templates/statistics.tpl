@@ -4,42 +4,42 @@
 			<div class="col-xs-12 imgwrap">
 				<img src="../images/winner.png" alt="Winner"><br>
 				<div class="col-xs-2 col-xs-offset-2">
-					<p class="comand"><?
-						reset($file->result_stat);
-						echo key($file->result_stat);
+					<p class="comand"><?php
+						reset($file->resultStat);
+						echo key($file->resultStat);
 					?></p>
 				</div>
 				<div class="col-xs-2">
-					<p class="count"><?=current($file->result_stat);?></p>
+					<p class="count"><?=current($file->resultStat);?></p>
 				</div>
 				<div class="col-xs-2">
-					<p class="count"><?
-						next($file->result_stat);
-						echo current($file->result_stat);
+					<p class="count"><?php
+						next($file->resultStat);
+						echo current($file->resultStat);
 					?></p>
 				</div>
 				<div class="col-xs-2">
-					<p class="comand"><?=key($file->result_stat);?></p>
+					<p class="comand"><?=key($file->resultStat);?></p>
 				</div>
 			</div>	
 			<div class="col-xs-12 events">
 				<h2>Основные события матча:</h2>
-				<?
-					foreach($file->events_stat as $key=>$event){
+				<?php
+					foreach($file->eventsStat as $key=>$event){
 						switch($event["type"]){
 							case "yellow":
-								echo "<div class='main'><p class='min'>".$key."&#39;</p>Игрок команды ".$event["team"]." ".$file->get_name($event["team"], $event["player"]).", №".$event["player"]." получил желтую карточку</div>";
+								echo "<div class='main'><p class='min'>".$key."&#39;</p>Игрок команды ".$event["team"]." ".$file->getName($event["team"], $event["player"]).", №".$event["player"]." получил желтую карточку</div>";
 							break;
 							case "red":
-								echo "<div class='main'><p class='min'>".$key."&#39;</p>Игрок команды ".$event["team"]." ".$file->get_name($event["team"], $event["player"]).", №".$event["player"]." получил красную карточку</div>";
+								echo "<div class='main'><p class='min'>".$key."&#39;</p>Игрок команды ".$event["team"]." ".$file->getName($event["team"], $event["player"]).", №".$event["player"]." получил красную карточку</div>";
 							break;
 							case "replace":
-								echo "<div class='main'><p class='min'>".$key."&#39;</p>Замена в команде ".$event["team"].", вместо игрока ".$file->get_name($event["team"], $event["playerOut"]).", №".$event["playerOut"]." на поле выходит ".$file->get_name($event["team"], $event["playerIn"]).", №".$event["playerIn"]."</div>";
+								echo "<div class='main'><p class='min'>".$key."&#39;</p>Замена в команде ".$event["team"].", вместо игрока ".$file->getName($event["team"], $event["playerOut"]).", №".$event["playerOut"]." на поле выходит ".$file->getName($event["team"], $event["playerIn"]).", №".$event["playerIn"]."</div>";
 							break;
 							case "goal":
-								echo "<div class='main'><p class='min'>".$key."&#39;</p>Гол команды ".$event["team"]." в исполнении ".$file->get_name($event["team"], $event["player"]).", №".$event["player"];
+								echo "<div class='main'><p class='min'>".$key."&#39;</p>Гол команды ".$event["team"]." в исполнении ".$file->getName($event["team"], $event["player"]).", №".$event["player"];
 								if ($event["assist"]!=""){
-									echo " с голевой передачи ".$file->get_name($event["team"], $event["assist"]).", №".$event["assist"];
+									echo " с голевой передачи ".$file->getName($event["team"], $event["assist"]).", №".$event["assist"];
 								}
 								echo "</div>";
 							break;
@@ -52,10 +52,10 @@
 				<h2>Основные игроки команд</h2>
 			</div>
 			<div class="col-xs-6 br">
-				<?
-					reset($file->players_stat);
-					echo "<h4>".key($file->players_stat)."</h4>";
-					foreach (current($file->players_stat) as $key=>$player){
+				<?php
+					reset($file->playersStat);
+					echo "<h4>".key($file->playersStat)."</h4>";
+					foreach (current($file->playersStat) as $key=>$player){
 						if ((isset($player["startTime"])) and ($player["startTime"]==0)){
 							echo "<div class='infplayer'><p class='name'>".$player["name"]."</p>";
 							echo "<p class='pnum'><span>Номер:</span> ".$key."</p>";
@@ -64,7 +64,7 @@
 								echo ($player["finTime"] - $player["startTime"])."</p>";
 							}
 							else{
-								echo $file->gametime."</p>";
+								echo $file->gameTime."</p>";
 							}
 							if (isset($player["yellow"])){
 								echo "<p class='yellow'><span>Желтые карточки:</span> ".$player["yellow"]."</p>";
@@ -84,10 +84,10 @@
 				?>
 			</div>
 			<div class="col-xs-6">
-				<?
-					next($file->players_stat);
-					echo "<h4>".key($file->players_stat)."</h4>";
-					foreach (current($file->players_stat) as $key=>$player){
+				<?php
+					next($file->playersStat);
+					echo "<h4>".key($file->playersStat)."</h4>";
+					foreach (current($file->playersStat) as $key=>$player){
 						if ((isset($player["startTime"])) and ($player["startTime"]==0)){
 							echo "<div class='infplayer'><p class='name'>".$player["name"]."</p>";
 							echo "<p class='pnum'><span>Номер:</span> ".$key."</p>";
@@ -96,7 +96,7 @@
 								echo ($player["finTime"] - $player["startTime"])."</p>";
 							}
 							else{
-								echo $file->gametime."</p>";
+								echo $file->gameTime."</p>";
 							}
 							if (isset($player["yellow"])){
 								echo "<p class='yellow'><span>Желтые карточки:</span> ".$player["yellow"]."</p>";
@@ -119,10 +119,10 @@
 				<h2>Игроки, вышедшие на замену</h2>
 			</div>
 			<div class="col-xs-6 br">
-				<?
-					reset($file->players_stat);
-					echo "<h4>".key($file->players_stat)."</h4>";
-					foreach (current($file->players_stat) as $key=>$player){
+				<?php
+					reset($file->playersStat);
+					echo "<h4>".key($file->playersStat)."</h4>";
+					foreach (current($file->playersStat) as $key=>$player){
 						if ((isset($player["startTime"])) and ($player["startTime"]>0)){
 							echo "<div class='infplayer'><p class='name'>".$player["name"]."</p>";
 							echo "<p class='pnum'><span>Номер:</span> ".$key."</p>";
@@ -131,7 +131,7 @@
 								echo ($player["finTime"] - $player["startTime"])."</p>";
 							}
 							else{
-								echo ($file->gametime - $player["startTime"])."</p>";
+								echo ($file->gameTime - $player["startTime"])."</p>";
 							}
 							if (isset($player["yellow"])){
 								echo "<p class='yellow'><span>Желтые карточки:</span> ".$player["yellow"]."</p>";
@@ -151,10 +151,10 @@
 				?>
 			</div>
 			<div class="col-xs-6">
-				<?
-					next($file->players_stat);
-					echo "<h4>".key($file->players_stat)."</h4>";
-					foreach (current($file->players_stat) as $key=>$player){
+				<?php
+					next($file->playersStat);
+					echo "<h4>".key($file->playersStat)."</h4>";
+					foreach (current($file->playersStat) as $key=>$player){
 						if ((isset($player["startTime"])) and ($player["startTime"]>0)){
 							echo "<div class='infplayer'><p class='name'>".$player["name"]."</p>";
 							echo "<p class='pnum'><span>Номер:</span> ".$key."</p>";
@@ -163,7 +163,7 @@
 								echo ($player["finTime"] - $player["startTime"])."</p>";
 							}
 							else{
-								echo ($file->gametime - $player["startTime"])."</p>";
+								echo ($file->gameTime - $player["startTime"])."</p>";
 							}
 							if (isset($player["yellow"])){
 								echo "<p class='yellow'><span>Желтые карточки:</span> ".$player["yellow"]."</p>";
@@ -187,10 +187,10 @@
 				<h2>Запасные игроки</h2>
 			</div>
 			<div class="col-xs-6 br">
-				<?
-					reset($file->players_stat);
-					echo "<h4>".key($file->players_stat)."</h4>";
-					foreach (current($file->players_stat) as $key=>$player){
+				<?php
+					reset($file->playersStat);
+					echo "<h4>".key($file->playersStat)."</h4>";
+					foreach (current($file->playersStat) as $key=>$player){
 						if (!(isset($player["startTime"]))){
 							echo "<p>".$player["name"].", №".$key."</p>";
 						}
@@ -198,10 +198,10 @@
 				?>
 			</div>
 			<div class="col-xs-6">
-				<?
-					next($file->players_stat);
-					echo "<h4>".key($file->players_stat)."</h4>";
-					foreach (current($file->players_stat) as $key=>$player){
+				<?php
+					next($file->playersStat);
+					echo "<h4>".key($file->playersStat)."</h4>";
+					foreach (current($file->playersStat) as $key=>$player){
 						if (!(isset($player["startTime"]))){
 							echo "<p>".$player["name"].", №".$key."</p>";
 						}

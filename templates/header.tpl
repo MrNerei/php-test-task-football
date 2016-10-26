@@ -2,6 +2,7 @@
 <html lang="ru">
 	<head>	
 		<meta charset="UTF-8">
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 		<title>Текстовая трансляция матча</title>
 		<link rel="stylesheet" href="../css/style.css">
 		<link rel="stylesheet" href="../css/bootstrap-grid.css">
